@@ -2,8 +2,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNet.OData;
+using Microsoft.AspNet.OData.Query;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.OData;
+using Microsoft.Data.OData.Query.SemanticAst;
 using Microsoft.EntityFrameworkCore;
 using SampleODataApp.Models;
 
@@ -15,9 +17,25 @@ namespace SampleODataApp.Controllers
         public PersonController(SampleODataDbContext sampleODataDbContext)
         {
             _sampleODataDbContext = sampleODataDbContext;
+
+            _sampleODataDbContext.Persons.Add(new Person {Name = "Bob", Age = 30});
+            _sampleODataDbContext.Persons.Add(new Person { Name = "Tom", Age = 30 });
+            _sampleODataDbContext.Persons.Add(new Person { Name = "Rob", Age = 33 });
+            _sampleODataDbContext.Persons.Add(new Person { Name = "Tim", Age = 21 });
+            _sampleODataDbContext.Persons.Add(new Person { Name = "Joe", Age = 45 });
+            _sampleODataDbContext.Persons.Add(new Person { Name = "Bart", Age = 38 });
+            _sampleODataDbContext.Persons.Add(new Person { Name = "Zoe", Age = 22 });
         }
 
-        [EnableQuery]
+        [EnableQuery(
+            AllowedQueryOptions = AllowedQueryOptions.All,
+            AllowedLogicalOperators = AllowedLogicalOperators.All,
+            AllowedArithmeticOperators = AllowedArithmeticOperators.All,
+            AllowedFunctions = AllowedFunctions.All, 
+            MaxTop = 100,
+            PageSize = 100,
+            AllowedOrderByProperties = "Name"
+            )]
         public IQueryable<Person> Get()
         {
             return _sampleODataDbContext.Persons.AsQueryable();

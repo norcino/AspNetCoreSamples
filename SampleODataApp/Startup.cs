@@ -1,10 +1,14 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System;
+using Microsoft.AspNet.OData.Builder;
+using Microsoft.AspNet.OData.Extensions;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.OData;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.OData.Builder;
-using Microsoft.AspNetCore.OData.Extensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.OData.Edm;
 using SampleODataApp.Models;
 
 namespace SampleODataApp
@@ -24,6 +28,7 @@ namespace SampleODataApp
                 options.UseInMemoryDatabase("InMemoryDb");
             });
 
+            services.AddODataQueryFilter();
             services.AddOData();
             services.AddMvc();
         }
@@ -33,13 +38,18 @@ namespace SampleODataApp
             {
                 app.UseDeveloperExceptionPage();
             }
-            var builder = new ODataConventionModelBuilder();
-            builder.EntitySet<Person>(nameof(Person));
 
             app.UseMvc(routebuilder =>
             {
-                routebuilder.MapODataRoute("odata", builder.GetEdmModel());
+                routebuilder.MapODataServiceRoute("odata", "odata", GetEdmModel(routebuilder.ServiceProvider));
             });
+        }
+
+        private IEdmModel GetEdmModel(IServiceProvider serviceProvider)
+        {
+            var builder = new ODataConventionModelBuilder(serviceProvider);
+            builder.EntitySet<Person>(nameof(Person));
+            return builder.GetEdmModel();
         }
     }
 }
