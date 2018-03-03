@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.AspNet.OData.Builder;
 using Microsoft.AspNet.OData.Extensions;
+using Microsoft.AspNet.OData.Query;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.OData;
 using Microsoft.AspNetCore.Hosting;
@@ -39,9 +40,17 @@ namespace SampleODataApp
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseMvc(routebuilder =>
+            app.UseMvc(routeBuilder =>
             {
-                routebuilder.MapODataServiceRoute("odata", "odata", GetEdmModel(routebuilder.ServiceProvider));
+                routeBuilder
+                        .Select()
+                        .Expand()
+                        .Filter()
+                        .OrderBy(QueryOptionSetting.Allowed)
+                        .MaxTop(2000)
+                        .Count();
+                routeBuilder.MapODataServiceRoute("odata", "odata", GetEdmModel(routeBuilder.ServiceProvider));
+                routeBuilder.EnableDependencyInjection();
             });
         }
 
